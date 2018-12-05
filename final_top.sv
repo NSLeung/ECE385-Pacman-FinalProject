@@ -43,11 +43,31 @@ module final_top( input               CLOCK_50,
                                  DRAM_CKE,     //SDRAM Clock Enable
                                  DRAM_WE_N,    //SDRAM Write Enable
                                  DRAM_CS_N,    //SDRAM Chip Select
-                                 DRAM_CLK      //SDRAM Clock
+                                 DRAM_CLK ,     //SDRAM Clock
+
+
+
+                                 // SRAM controls (may be missing a clk signal??)
+                      				output logic [19:0] SRAM_ADDR,	// SRAM Address 20 Bits
+                      				inout wire [15:0] SRAM_DQ,			// SRAM Data 16 Bits
+                      				output logic 	SRAM_CE_N,			// SRAM Chip Enable
+                      									SRAM_LB_N,			// SRAM Lower Byte Enable (?)
+                      									SRAM_OE_N,			// SRAM Output Enable(?)
+                      									SRAM_UB_N,			// SRAM Upper Byte Enable (?)
+                      									SRAM_WE_N			// SRAM Write Enable (?)
                     );
 
     logic Reset_h, Clk, Reset_ball_h;
     logic [7:0] keycode;
+
+    //logic for sram ctrl module
+    logic ready, enable;
+    logic [15:0] SRAM_DATA, toSRAM_ctrl_data;
+    logic [9:0]  DrawX_in, DrawY_in;
+	  logic [19:0] frontbuff_addr, backbuff_addr;
+
+
+
 
 	 logic[9:0] DrawX, DrawY;
     assign Clk = CLOCK_50;
@@ -59,6 +79,22 @@ module final_top( input               CLOCK_50,
     logic [1:0] hpi_addr;
     logic [15:0] hpi_data_in, hpi_data_out;
     logic hpi_r, hpi_w, hpi_cs, hpi_reset;
+
+    logic [19:0] pixel_address;
+	   logic [19:0] address;
+    //always comb block
+    always_comb
+    begin
+      //initialize toSRAM_ctrl_data
+      toSRAM_ctrl_data = front_data;
+      //address index into SRAM (pay attention width)
+      //CHANGE HERE
+     pixel_address = DrawY_in * 19'd640 + DrawX_in;
+     if (SRAM_WE_CTRL == 1'b1)
+       address = pixel_address;
+     else
+       address = frontbuff_addr;
+    end
 
     // Interface between NIOS II and EZ-OTG chip
     hpi_io_intf hpi_io_inst(
@@ -109,13 +145,81 @@ module final_top( input               CLOCK_50,
     // You will have to generate it on your own in simulation.
     vga_clk vga_clk_instance(.inclk0(Clk), .c0(VGA_CLK));
 
-    // TODO: Fill in the connections for the rest of the modules
-    VGA_controller vga_controller_instance(.*, .Reset(Reset_h));
+    // VGA Controller module
+    // VGA_controller vga_controller_instance(.*, .Reset(Reset_h));
+    VGA_controller vga_controller_instance(
+                            .Reset(Reset_h),
+                            .VGA_HS(VGA_HS),
+                            .VGA_VS(VGA_VS),
+                            .VGA_CLK(VGA_CLK),
+                            .VGA_BLANK_N(VGA_BLANK_N),
+                            .VGA_SYNC_N(VGA_SYNC_N),
+
+                            //inputs to vga controller
+                            .DrawX(DrawX_in),
+														 .DrawY(DrawY_in)
+    );
 
     // Which signal should be frame_clk?
     ball ball_instance(.Clk(Clk), .Reset(Reset_ball_h), .frame_clk(VGA_VS), .DrawX(DrawX), .DrawY(DrawY), .keycode(keycode), .is_ball(is_ball));
 
-    color_mapper color_instance(.*);
+
+
+    //color mapper module
+    // color_mapper color_instance(.*);
+    color_mapper color_instance(
+                        .Color_Enum(SRAM_DATA),
+                        .VGA_R(VGA_R),
+                        .VGA_G(VGA_G),
+                        .VGA_B(VGA_B));
+    );
+
+    //instantiate sram_ctrl
+    sram_ctrl sram_ctrl_module(
+                      .clk(Clk),
+                      .reset_n(~Reset_h),
+                      .start_n(enable),
+                      .addr_in(address),
+                      .data_write(toSRAM_ctrl_data),
+                      .rw(SRAM_WE_CTRL),  // 1  means read, 0 means write
+                      //outputs
+                      .ready(ready),
+                      .data_read(SRAM_DATA),
+                      .sram_addr(SRAM_ADDR),
+                      .we_n(SRAM_WE_N),
+                      .oe_n(SRAM_OE_N),
+                      .ce_a_n(SRAM_CE_N),
+                      .ub_a_n(SRAM_UB_N),
+                      .lb_a_n(SRAM_LB_N),
+                      .data_io(SRAM_DQ)
+    );
+
+    frame_drawer frame_drawer_instance(.CLK(Clk),
+													.RESET(Reset_h),
+													.ENABLE(VGA_BLANK_N),
+													.DRAW_READY(ready),
+                          //output
+													.WRITEADDR(frontbuff_addr),
+
+
+                          //COMING FROM SOFTWARE - NOT IMPLEMENTING YET
+													// .PLAYER_X(player_coords[15:8]),
+													// .PLAYER_Y(player_coords[7:0]),
+													// .PLAYER_DIR(player_info[1:0]),
+													.UI_ENABLE(1'b1),
+													.DATA(fd_data),
+													.DRAW_COMMAND(~KEY[3] | player_info[2]),
+													.MAP_ID(player_info[6:4]),
+													.FD_WE_N(FD_write_request_n),
+													.ocm_data_out(temp_data)
+    );
+
+
+
+
+
+
+
 
     // Display keycode on hex display
     HexDriver hex_inst_0 (keycode[3:0], HEX0);

@@ -14,36 +14,81 @@
 //-------------------------------------------------------------------------
 
 // color_mapper: Decide which color to be output to VGA for each pixel.
-module  color_mapper ( input              is_ball,            // Whether current pixel belongs to ball 
+module  color_mapper (
+                        // input              is_ball,            // Whether current pixel belongs to ball
                                                               //   or background (computed in ball.sv)
+                                                              //
+                    //   SRAM data width is 16 bits wide so we must use this as an input
+                      input [15:0] color_index,
                        input        [9:0] DrawX, DrawY,       // Current pixel coordinates
                        output logic [7:0] VGA_R, VGA_G, VGA_B // VGA RGB output
                      );
-    
+
     logic [7:0] Red, Green, Blue;
-    
+
     // Output colors to VGA
     assign VGA_R = Red;
     assign VGA_G = Green;
     assign VGA_B = Blue;
-    
+
     // Assign color based on is_ball signal
     always_comb
-    begin
-        if (is_ball == 1'b1) 
-        begin
-            // White ball
-            Red = 8'hff;
-            Green = 8'hff;
-            Blue = 8'hff;
-        end
-        else 
-        begin
-            // Background with nice color gradient
-            Red = 8'h3f; 
-            Green = 8'h00;
-            Blue = 8'h7f - {1'b0, DrawX[9:3]};
-        end
-    end 
-    
+      begin
+        //case on color_index to get the respective RGB values
+        case(color_index)
+          16'd0:
+            begin
+              //first entry in color pallete is black
+              Red = 8'h00;
+              Green = 8'h00;
+              Blue = 8'h00;
+            end
+          16'd1:
+          begin
+            Red = 8'hFA;
+            Green = 8'hB9;
+            Blue = 8'hB0;
+          end
+          16'd2:
+          begin
+            Red = 8'h21;
+            Green = 8'h21;
+            Blue = 8'hFF;
+          end
+          16'd3:
+          begin
+            Red = 8'hFC;
+            Green = 8'hB5;
+            Blue = 8'hFF;
+          end
+          default:
+          //some default values that we can change later
+            begin
+            	VGA_R = 8'h7F;
+            	VGA_G = 8'h7F;
+            	VGA_B = 8'h7F;
+            end
+        endcase
+      end
+
+
+
+    //lab 8 logic
+    // begin
+    //     if (is_ball == 1'b1)
+    //     begin
+    //         // White ball
+    //         Red = 8'hff;
+    //         Green = 8'hff;
+    //         Blue = 8'hff;
+    //     end
+    //     else
+    //     begin
+    //         // Background with nice color gradient
+    //         Red = 8'h3f;
+    //         Green = 8'h00;
+    //         Blue = 8'h7f - {1'b0, DrawX[9:3]};
+    //     end
+    // end
+
 endmodule
