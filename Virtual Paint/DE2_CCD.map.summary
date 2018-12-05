@@ -1,0 +1,14 @@
+Analysis & Synthesis Status : Successful - Wed Dec 08 10:44:24 2010
+Quartus II Version : 10.0 Build 218 06/27/2010 SJ Full Version
+Revision Name : DE2_CCD
+Top-level Entity Name : DE2_CCD
+Family : Cyclone II
+Total logic elements : 2,924
+    Total combinational functions : 2,564
+    Dedicated logic registers : 1,193
+Total registers : 1193
+Total pins : 425
+Total virtual pins : 0
+Total memory bits : 338,648
+Embedded Multiplier 9-bit elements : 0
+Total PLLs : 1

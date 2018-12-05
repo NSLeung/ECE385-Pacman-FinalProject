@@ -1,0 +1,25 @@
+
+State Machine - |DE2_CCD|color_sel
+Name color_sel.11 color_sel.10 color_sel.01 color_sel.00 
+color_sel.00 0 0 0 0 
+color_sel.01 0 0 1 1 
+color_sel.10 0 1 0 1 
+color_sel.11 1 0 0 1 
+
+State Machine - |DE2_CCD|state
+Name state.init1 
+state.init 0 
+state.init1 1 
+
+State Machine - |DE2_CCD|I2C_CCD_Config:u7|mSetup_ST
+Name mSetup_ST.0000 mSetup_ST.0010 mSetup_ST.0001 
+mSetup_ST.0000 0 0 0 
+mSetup_ST.0001 1 0 1 
+mSetup_ST.0010 1 1 0 
+
+State Machine - |DE2_CCD|gpu_func_draw_line:line_drawing|state
+Name state.final state.last state.incre state.init 
+state.init 0 0 0 0 
+state.incre 0 0 1 1 
+state.last 0 1 0 1 
+state.final 1 0 0 1 
