@@ -20,7 +20,7 @@ module  color_mapper (
                                                               //
                     //   SRAM data width is 16 bits wide so we must use this as an input
                       input [15:0] color_index,
-                       input        [9:0] DrawX, DrawY,       // Current pixel coordinates
+                       // input        [9:0] DrawX, DrawY,       // Current pixel coordinates
                        output logic [7:0] VGA_R, VGA_G, VGA_B // VGA RGB output
                      );
 

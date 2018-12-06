@@ -63,19 +63,24 @@ module final_top( input               CLOCK_50,
     //logic for sram ctrl module
     logic ready, enable;
     logic [15:0] SRAM_DATA, toSRAM_ctrl_data;
-    logic [9:0]  DrawX_in, DrawY_in;
+    logic [9:0]  DrawX, DrawY;
 	  logic [19:0] frontbuff_addr, backbuff_addr;
+	  // this was not initialised last night
+	  logic SRAM_WE_CTRL;
+
+    assign enable = ~(VGA_BLANK_N | ~FD_write_request_n);  //set enable 0 when the VGA is trying to read, and the frame_drawer wants to write.
+    assign SRAM_WE_CTRL = VGA_BLANK_N | FD_write_request_n; //always read (1) when not blanking (1) and if not writing (1)
 
 
 
 
-	 logic[9:0] DrawX, DrawY;
     assign Clk = CLOCK_50;
     always_ff @ (posedge Clk) begin
         Reset_h <= ~(KEY[0]);        // The push buttons are active low
 		  Reset_ball_h <= ~(KEY[2]);
     end
 
+    //HPI interface logic variables
     logic [1:0] hpi_addr;
     logic [15:0] hpi_data_in, hpi_data_out;
     logic hpi_r, hpi_w, hpi_cs, hpi_reset;
@@ -86,14 +91,16 @@ module final_top( input               CLOCK_50,
     always_comb
     begin
       //initialize toSRAM_ctrl_data
-      toSRAM_ctrl_data = front_data;
+      toSRAM_ctrl_data = frontbuff_data;
       //address index into SRAM (pay attention width)
       //CHANGE HERE
-     pixel_address = DrawY_in * 19'd640 + DrawX_in;
+//     pixel_address = DrawY_in * 19'd640 + DrawX_in;
+		pixel_address = DrawY_in * 19'd226 + DrawX_in; // Width of image is 226
      if (SRAM_WE_CTRL == 1'b1)
        address = pixel_address;
      else
-       address = frontbuff_addr;
+			// address = 19'd0; // commented the next line because frontbuff is populated in the framebuffer module and this is the game logic which is not required for just the background.
+      address = frontbuff_addr;
     end
 
     // Interface between NIOS II and EZ-OTG chip
@@ -155,23 +162,27 @@ module final_top( input               CLOCK_50,
                             .VGA_BLANK_N(VGA_BLANK_N),
                             .VGA_SYNC_N(VGA_SYNC_N),
 
-                            //inputs to vga controller
-                            .DrawX(DrawX_in),
-														 .DrawY(DrawY_in)
+                            //outputs from vga controller
+                            .DrawX(DrawX),
+														 .DrawY(DrawY)
     );
 
     // Which signal should be frame_clk?
-    ball ball_instance(.Clk(Clk), .Reset(Reset_ball_h), .frame_clk(VGA_VS), .DrawX(DrawX), .DrawY(DrawY), .keycode(keycode), .is_ball(is_ball));
+    // ball ball_instance(.Clk(Clk), .Reset(Reset_ball_h), .frame_clk(VGA_VS), .DrawX(DrawX), .DrawY(DrawY), .keycode(keycode), .is_ball(is_ball));
 
 
 
     //color mapper module
     // color_mapper color_instance(.*);
     color_mapper color_instance(
-                        .Color_Enum(SRAM_DATA),
+                      //input
+                        .color_index(SRAM_DATA),
+
+
+                        //output
                         .VGA_R(VGA_R),
                         .VGA_G(VGA_G),
-                        .VGA_B(VGA_B));
+                        .VGA_B(VGA_B)
     );
 
     //instantiate sram_ctrl
@@ -194,6 +205,8 @@ module final_top( input               CLOCK_50,
                       .data_io(SRAM_DQ)
     );
 
+	 // Commented out frame_drawer for now because it determines the logic and position for the smaller sprites (Trying to get just the background now)
+	 /*
     frame_drawer frame_drawer_instance(.CLK(Clk),
 													.RESET(Reset_h),
 													.ENABLE(VGA_BLANK_N),
@@ -214,7 +227,19 @@ module final_top( input               CLOCK_50,
 													.ocm_data_out(temp_data)
     );
 
-
+*/
+    draw_control draw_control_instance(
+                  .CLK(Clk),
+                  .RESET(Reset_h),
+                  .ENABLE(VGA_BLANK_N),  //blanking enable for drawing
+                  .DRAW_READY(sram_done),
+                  
+                  //outputs from draw_control
+                   .WRITEADDR(frontbuff_addr),
+                   .DATA(frontbuff_data),
+                  .FD_WE_N(FD_write_request_n),
+                   .ocm_data_out(temp_data)
+    );
 
 
 
