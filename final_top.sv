@@ -85,22 +85,30 @@ module final_top( input               CLOCK_50,
     logic [15:0] hpi_data_in, hpi_data_out;
     logic hpi_r, hpi_w, hpi_cs, hpi_reset;
 
+    //address calculations done inside draw_controller
     logic [19:0] pixel_address;
 	   logic [19:0] address;
+
+     //logic variables for draw_control and color_mapper
+     logic [2:0] color_index;
+
+
+
+
     //always comb block
     always_comb
     begin
       //initialize toSRAM_ctrl_data
-      toSRAM_ctrl_data = frontbuff_data;
+      // toSRAM_ctrl_data = frontbuff_data;
       //address index into SRAM (pay attention width)
       //CHANGE HERE
 //     pixel_address = DrawY_in * 19'd640 + DrawX_in;
-		pixel_address = DrawY_in * 19'd226 + DrawX_in; // Width of image is 226
-     if (SRAM_WE_CTRL == 1'b1)
-       address = pixel_address;
-     else
+		// pixel_address = DrawY_in * 19'd226 + DrawX_in; // Width of image is 226
+    //  if (SRAM_WE_CTRL == 1'b1)
+    //    address = pixel_address;
+    //  else
 			// address = 19'd0; // commented the next line because frontbuff is populated in the framebuffer module and this is the game logic which is not required for just the background.
-      address = frontbuff_addr;
+      // address = frontbuff_addr;
     end
 
     // Interface between NIOS II and EZ-OTG chip
@@ -176,7 +184,7 @@ module final_top( input               CLOCK_50,
     // color_mapper color_instance(.*);
     color_mapper color_instance(
                       //input
-                        .color_index(SRAM_DATA),
+                        .color_index(color_index),
 
 
                         //output
@@ -186,24 +194,24 @@ module final_top( input               CLOCK_50,
     );
 
     //instantiate sram_ctrl
-    sram_ctrl sram_ctrl_module(
-                      .clk(Clk),
-                      .reset_n(~Reset_h),
-                      .start_n(enable),
-                      .addr_in(address),
-                      .data_write(toSRAM_ctrl_data),
-                      .rw(SRAM_WE_CTRL),  // 1  means read, 0 means write
-                      //outputs
-                      .ready(ready),
-                      .data_read(SRAM_DATA),
-                      .sram_addr(SRAM_ADDR),
-                      .we_n(SRAM_WE_N),
-                      .oe_n(SRAM_OE_N),
-                      .ce_a_n(SRAM_CE_N),
-                      .ub_a_n(SRAM_UB_N),
-                      .lb_a_n(SRAM_LB_N),
-                      .data_io(SRAM_DQ)
-    );
+    // sram_ctrl sram_ctrl_module(
+    //                   .clk(Clk),
+    //                   .reset_n(~Reset_h),
+    //                   .start_n(enable),
+    //                   .addr_in(address),
+    //                   .data_write(toSRAM_ctrl_data),
+    //                   .rw(SRAM_WE_CTRL),  // 1  means read, 0 means write
+    //                   //outputs
+    //                   .ready(ready),
+    //                   .data_read(SRAM_DATA),
+    //                   .sram_addr(SRAM_ADDR),
+    //                   .we_n(SRAM_WE_N),
+    //                   .oe_n(SRAM_OE_N),
+    //                   .ce_a_n(SRAM_CE_N),
+    //                   .ub_a_n(SRAM_UB_N),
+    //                   .lb_a_n(SRAM_LB_N),
+    //                   .data_io(SRAM_DQ)
+    // );
 
 	 // Commented out frame_drawer for now because it determines the logic and position for the smaller sprites (Trying to get just the background now)
 	 /*
@@ -231,14 +239,23 @@ module final_top( input               CLOCK_50,
     draw_control draw_control_instance(
                   .CLK(Clk),
                   .RESET(Reset_h),
-                  .ENABLE(VGA_BLANK_N),  //blanking enable for drawing
-                  .DRAW_READY(sram_done),
-                  
+                  // .ENABLE(VGA_BLANK_N),  //blanking enable for drawing
+                  // .DRAW_READY(sram_done),
+
                   //outputs from draw_control
-                   .WRITEADDR(frontbuff_addr),
-                   .DATA(frontbuff_data),
-                  .FD_WE_N(FD_write_request_n),
-                   .ocm_data_out(temp_data)
+                   // .WRITEADDR(frontbuff_addr),
+                   // .DATA(frontbuff_data),
+                  // .FD_WE_N(FD_write_request_n),
+                   .mem_address_out(address)
+    );
+
+    //Maze background here
+    frameRAM frameRAM_instance(
+    										.write_address(6'b0), //don't care
+    										.read_address(address),
+    										.we(1'b0), //we always low
+    										.Clk(CLK),
+    										.data_Out(color_index)
     );
 
 
