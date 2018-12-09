@@ -20,9 +20,8 @@ module draw_control(input logic CLK,
 							);
 
 //state machine
-enum logic [3:0] {
-	Await,  //0
-	Reset,
+enum logic [1:0] {
+	Wait
 
 } State, Next_State;
 
@@ -31,29 +30,32 @@ logic [15:0] mem_address;
 //instantiate modules here
 
 
+//2 ALWAYS CONSTRUCT
 
 //address calculations
 always_comb begin
-	if(RESET)
-	begin
-		mem_address = 16'b0;
-	end
+//	if(RESET)
+//	begin
+//		mem_address = 16'b0;
+//	end
 	//check if in bounds
-	else if((DrawX < 256) && (DrawY < 256))
+//	else if((DrawX < 256) && (DrawY < 256))
+if((DrawX < 256) && (DrawY < 256))
 	begin
 			mem_address = DrawX + 10'd256 * DrawY;
+//			mem_address = 16'd5;
 	end
 	else
 	begin
-		mem_address = 16'b0;
+		mem_address = 16'd000;
 	end
 end
 
 
 
-assign WRITEADDR = address;
-assign DATA = data;
-assign FD_WE_N = write_n;
+//assign WRITEADDR = address;
+//assign DATA = data;
+//assign FD_WE_N = write_n;
 // assign ocm_data_out = ocm_data;
 assign mem_address_out = mem_address;
 endmodule

@@ -19,7 +19,7 @@ module  color_mapper (
                                                               //   or background (computed in ball.sv)
                                                               //
                     //   SRAM data width is 16 bits wide so we must use this as an input
-                      input [15:0] color_index,
+                      input [1:0] color_index,
                        // input        [9:0] DrawX, DrawY,       // Current pixel coordinates
                        output logic [7:0] VGA_R, VGA_G, VGA_B // VGA RGB output
                      );
@@ -36,26 +36,26 @@ module  color_mapper (
       begin
         //case on color_index to get the respective RGB values
         case(color_index)
-          16'd0:
+          2'd0:
             begin
               //first entry in color pallete is black
               Red = 8'h00;
               Green = 8'h00;
               Blue = 8'h00;
             end
-          16'd1:
+          2'd1:
           begin
             Red = 8'hFA;
             Green = 8'hB9;
             Blue = 8'hB0;
           end
-          16'd2:
+          2'd2:
           begin
             Red = 8'h21;
             Green = 8'h21;
             Blue = 8'hFF;
           end
-          16'd3:
+          2'd3:
           begin
             Red = 8'hFC;
             Green = 8'hB5;
@@ -64,9 +64,9 @@ module  color_mapper (
           default:
           //some default values that we can change later
             begin
-            	VGA_R = 8'h7F;
-            	VGA_G = 8'h7F;
-            	VGA_B = 8'h7F;
+            	Red = 8'h7F;
+            	Green = 8'h7F;
+            	Blue = 8'h7F;
             end
         endcase
       end
