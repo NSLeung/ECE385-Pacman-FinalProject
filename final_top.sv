@@ -62,7 +62,7 @@ module final_top( input               CLOCK_50,
 
     //logic for sram ctrl module
     logic ready, enable;
-    logic [15:0] SRAM_DATA, toSRAM_ctrl_data;
+    // logic [15:0] SRAM_DATA, toSRAM_ctrl_data;
     logic [9:0]  DrawX, DrawY;
 	  logic [19:0] frontbuff_addr, backbuff_addr;
 	  // this was not initialised last night
@@ -93,6 +93,9 @@ module final_top( input               CLOCK_50,
      logic [3:0] color_index;
 		logic [3:0] memtest;
 
+    //logic variables for pac_controller
+    logic isPac;
+    logic [7:0] pac_mem_start_X, pac_mem_start_Y;
 
 
     //always comb block
@@ -241,8 +244,11 @@ module final_top( input               CLOCK_50,
                   .RESET(Reset_h),
                   // .ENABLE(VGA_BLANK_N),  //blanking enable for drawing
                   // .DRAW_READY(sram_done),
-						.DrawX(DrawX),
-						.DrawY(DrawY),
+                  .isPac(isPac),
+      						.DrawX(DrawX),
+      						.DrawY(DrawY),
+                  .pac_mem_start_X(pac_mem_X),
+                  .pac_mem_start_Y(pac_mem_Y),
                   //outputs from draw_control
                    // .WRITEADDR(frontbuff_addr),
                    // .DATA(frontbuff_data),
@@ -252,12 +258,26 @@ module final_top( input               CLOCK_50,
 
     //Maze background here
     frameRAM frameRAM_instance(
-    										.write_address(16'b0), //don't care
+    										// .write_address(16'b0), //don't care
     										.read_address(address),
     										.we(1'b0), //we always low
-    										.Clk(CLK),
-    										.data_Out(color_index),
-											.memdata(memtest)
+    										.Clk(Clk),
+    										.data_out(color_index)
+                        ,.memdata(memtest)
+    );
+
+
+    //instantiate pac module - determines whether pacman should be drawn or not
+    pac_controller pacman(
+          .Clk(CLK),
+          .Reset(Reset_h),
+          .frame_clk(VGA_VS),
+          .DrawX(DrawX),
+          .DrawY(DrawY),
+          .keycode(keycode),
+          .pac_mem_start_X(pac_mem_start_X),
+          .pac_mem_start_Y(pac_mem_start_Y),
+          .isPac(isPac)
     );
 
 
@@ -267,7 +287,8 @@ module final_top( input               CLOCK_50,
 
     // Display keycode on hex display
     HexDriver hex_inst_0 ({2'b0, color_index[1:0]}, HEX0);
-    HexDriver hex_inst_1 (DrawX[3:0], HEX1);
+    HexDriver hex_inst_1 ({3'b0, isPac}, Hex1);
+    // HexDriver hex_inst_1 (DrawX[3:0], HEX1);
 	 HexDriver hex_inst_2 (DrawX[7:4], HEX2);
 	 HexDriver hex_inst_3 (memtest, HEX3);
 
