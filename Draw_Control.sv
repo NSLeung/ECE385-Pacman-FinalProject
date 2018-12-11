@@ -51,7 +51,7 @@ always_comb begin
 			mem_address = DrawX + 10'd256 * DrawY;
 //			mem_address = 16'd5;
 	end
-	else if (isPac)
+	else if (isPac == 1'b1)
 	begin
 		//grab pacman in memory
 		mem_address = pac_mem_pos_X + 8'd10 * pac_mem_pos_Y;

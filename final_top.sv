@@ -247,8 +247,8 @@ module final_top( input               CLOCK_50,
                   .isPac(isPac),
       						.DrawX(DrawX),
       						.DrawY(DrawY),
-                  .pac_mem_start_X(pac_mem_X),
-                  .pac_mem_start_Y(pac_mem_Y),
+                  .pac_mem_start_X(pac_mem_start_X),
+                  .pac_mem_start_Y(pac_mem_start_Y),
                   //outputs from draw_control
                    // .WRITEADDR(frontbuff_addr),
                    // .DATA(frontbuff_data),
@@ -261,6 +261,7 @@ module final_top( input               CLOCK_50,
     										// .write_address(16'b0), //don't care
     										.read_address(address),
     										.we(1'b0), //we always low
+                        .isPac(isPac),
     										.Clk(Clk),
     										.data_out(color_index)
                         ,.memdata(memtest)
@@ -274,7 +275,8 @@ module final_top( input               CLOCK_50,
           .frame_clk(VGA_VS),
           .DrawX(DrawX),
           .DrawY(DrawY),
-          .keycode(keycode),
+          // .keycode(keycode),
+          .keycode(8'h1F),
           .pac_mem_start_X(pac_mem_start_X),
           .pac_mem_start_Y(pac_mem_start_Y),
           .isPac(isPac)

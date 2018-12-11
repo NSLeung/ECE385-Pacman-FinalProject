@@ -4,7 +4,7 @@ module  pac_controller ( input         Clk,                // 50 MHz clock
                input [9:0]   DrawX, DrawY,       // Current pixel coordinates
 					     input[7:0]	  keycode,				 // keycode
 
-              
+
                output logic[7:0] pac_mem_start_X, pac_mem_start_Y,
                output logic  isPac            // Whether current pixel belongs to ball or background
               );
@@ -21,11 +21,11 @@ module  pac_controller ( input         Clk,                // 50 MHz clock
     //collider math
     parameter [7:0] pac_Size = 8'd5;        // Ball size
 
-//    logic [9:0] Ball_X_Pos, Ball_X_Motion, Ball_Y_Pos, Ball_Y_Motion;
+
     logic [9:0] pac_X_Pos_in, pac_X_Motion_in, pac_Y_Pos_in, pac_Y_Motion_in;
 
 	 // In lab 8 initially the ball moves upwards but here there is no initial movement condition
-	 logic [7:0] pac_X_Motion = 8'b0;
+	 logic [7:0] pac_X_Motion = 8'b1;
 	 logic[7:0] pac_Y_Motion = 8'b0;
 
 	 logic[7:0] pac_X_Pos = pac_X_startpos;
@@ -46,7 +46,8 @@ module  pac_controller ( input         Clk,                // 50 MHz clock
         begin
             pac_X_Pos <= pac_X_startpos;
             pac_Y_Pos <= pac_Y_startpos;
-            pac_X_Motion <= 8'd0;
+            // pac_X_Motion <= 8'd0;
+            pac_X_Motion <= pac_X_Step;
             pac_Y_Motion <= 8'd0;
         end
         else
@@ -66,9 +67,11 @@ module  pac_controller ( input         Clk,                // 50 MHz clock
         pac_X_Pos_in = pac_X_Pos;
         pac_Y_Pos_in = pac_Y_Pos;
 		  // By default (if no key is pressed), pacman must not move
-        pac_X_Motion_in = 0;
-        pac_Y_Motion_in = 0;
+        // pac_X_Motion_in = 0;
+        // pac_Y_Motion_in = 0;
 
+        pac_X_Motion_in = pac_X_Motion;
+        pac_Y_Motion_in = pac_Y_Motion;
         // Update position and motion only at rising edge of frame clock
         if (frame_clk_rising_edge)
         begin
@@ -204,7 +207,8 @@ module  pac_controller ( input         Clk,                // 50 MHz clock
 							else
 
 								begin
-									pac_X_Motion_in = 8'd0;
+									// pac_X_Motion_in = 8'd0;
+									pac_X_Motion_in = pac_X_Motion;
 //									Ball_X_Motion_in = 8'b0;
 //
 //									//don't want it to move like in lab 8
