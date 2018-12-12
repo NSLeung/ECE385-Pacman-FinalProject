@@ -31,7 +31,9 @@ module  pac_controller ( input         Clk,                // 50 MHz clock
 	 logic[7:0] pac_X_Pos = pac_X_startpos;
 	 logic[7:0] pac_Y_Pos = pac_Y_startpos;
 
-
+//		keycode = 8'h1F;
+	logic [7:0] temp = 8'h1F;
+  logic flag = 1'b1;
     //////// Do not modify the always_ff blocks. ////////
     // Detect rising edge of frame_clk
     logic frame_clk_delayed, frame_clk_rising_edge;
@@ -46,8 +48,8 @@ module  pac_controller ( input         Clk,                // 50 MHz clock
         begin
             pac_X_Pos <= pac_X_startpos;
             pac_Y_Pos <= pac_Y_startpos;
-            // pac_X_Motion <= 8'd0;
-            pac_X_Motion <= pac_X_Step;
+            pac_X_Motion <= 8'd0;
+            // pac_X_Motion <= pac_X_Step;
             pac_Y_Motion <= 8'd0;
         end
         else
@@ -82,7 +84,7 @@ module  pac_controller ( input         Clk,                // 50 MHz clock
 
 
 				//begin keycode logic
-				unique case(keycode)
+				unique case(temp)
 					// 'W' (UP)
 					8'h1A:
 						begin
@@ -224,8 +226,11 @@ module  pac_controller ( input         Clk,                // 50 MHz clock
 //						end
 					endcase
 					// Update the ball's position with its motion
-							pac_X_Pos_in = pac_X_Pos + pac_X_Motion;
+							// pac_X_Pos_in = pac_X_Pos + pac_X_Motion;
+              pac_X_Pos_in = pac_X_Pos + 8'd1;
+
 							pac_Y_Pos_in = pac_Y_Pos + pac_Y_Motion;
+              flag = 1'b0;
         end
     end
 
