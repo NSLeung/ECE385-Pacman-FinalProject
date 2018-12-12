@@ -15,7 +15,7 @@
 
 module final_top( input               CLOCK_50,
              input        [3:0]  KEY,          //bit 0 is set up as Reset
-             output logic [6:0]  HEX0, HEX1,HEX2,HEX3,
+             output logic [6:0]  HEX0, HEX1,HEX2,HEX3,HEX4,HEX5,HEX6,HEX7,
              // VGA Interface
              output logic [7:0]  VGA_R,        //VGA Red
                                  VGA_G,        //VGA Green
@@ -75,9 +75,20 @@ module final_top( input               CLOCK_50,
 
 
     assign Clk = CLOCK_50;
+
+    //clk counter for slowing down clk
+    // logic [31:0] clk_counter = 32'd0;
+    // logic clear;
     always_ff @ (posedge Clk) begin
         Reset_h <= ~(KEY[0]);        // The push buttons are active low
 		  Reset_ball_h <= ~(KEY[2]);
+      // clear <=0;
+      // if(clk_counter == 32'h005F5E100 )
+      // begin
+      //   clear <= 1'd1;
+      //   clk_counter <= 0;
+      // end
+      // else clk_counter <= clk_counter + 32'd1;
     end
 
     //HPI interface logic variables
@@ -115,53 +126,55 @@ module final_top( input               CLOCK_50,
     end
 
     // Interface between NIOS II and EZ-OTG chip
-   hpi_io_intf hpi_io_inst(
-                           .Clk(Clk),
-                           .Reset(Reset_h),
-                           // signals connected to NIOS II
-                           .from_sw_address(hpi_addr),
-                           .from_sw_data_in(hpi_data_in),
-                           .from_sw_data_out(hpi_data_out),
-                           .from_sw_r(hpi_r),
-                           .from_sw_w(hpi_w),
-                           .from_sw_cs(hpi_cs),
-                           .from_sw_reset(hpi_reset),
-                           // signals connected to EZ-OTG chip
-                           .OTG_DATA(OTG_DATA),
-                           .OTG_ADDR(OTG_ADDR),
-                           .OTG_RD_N(OTG_RD_N),
-                           .OTG_WR_N(OTG_WR_N),
-                           .OTG_CS_N(OTG_CS_N),
-                           .OTG_RST_N(OTG_RST_N)
-   );
+   // hpi_io_intf hpi_io_inst(
+   //                         .Clk(Clk),
+   //                         .Reset(Reset_h),
+   //                         // signals connected to NIOS II
+   //                         .from_sw_address(hpi_addr),
+   //                         .from_sw_data_in(hpi_data_in),
+   //                         .from_sw_data_out(hpi_data_out),
+   //                         .from_sw_r(hpi_r),
+   //                         .from_sw_w(hpi_w),
+   //                         .from_sw_cs(hpi_cs),
+   //                         .from_sw_reset(hpi_reset),
+   //                         // signals connected to EZ-OTG chip
+   //                         .OTG_DATA(OTG_DATA),
+   //                         .OTG_ADDR(OTG_ADDR),
+   //                         .OTG_RD_N(OTG_RD_N),
+   //                         .OTG_WR_N(OTG_WR_N),
+   //                         .OTG_CS_N(OTG_CS_N),
+   //                         .OTG_RST_N(OTG_RST_N)
+   // );
 //
 //     // You need to make sure that the port names here match the ports in Qsys-generated codes.
-    pacman_finalproject_wkeycode_soc nios_system(
-                            .clk_clk(Clk),
-                            .reset_reset_n(1'b1),    // Never reset NIOS
-                            .sdram_wire_addr(DRAM_ADDR),
-                            .sdram_wire_ba(DRAM_BA),
-                            .sdram_wire_cas_n(DRAM_CAS_N),
-                            .sdram_wire_cke(DRAM_CKE),
-                            .sdram_wire_cs_n(DRAM_CS_N),
-                            .sdram_wire_dq(DRAM_DQ),
-                            .sdram_wire_dqm(DRAM_DQM),
-                            .sdram_wire_ras_n(DRAM_RAS_N),
-                            .sdram_wire_we_n(DRAM_WE_N),
-                            .sdram_clk_clk(DRAM_CLK),
-                            .keycode_export(keycode),
-                            .otg_hpi_address_export(hpi_addr),
-                            .otg_hpi_data_in_port(hpi_data_in),
-                            .otg_hpi_data_out_port(hpi_data_out),
-                            .otg_hpi_cs_export(hpi_cs),
-                            .otg_hpi_r_export(hpi_r),
-                            .otg_hpi_w_export(hpi_w),
-                            .otg_hpi_reset_export(hpi_reset)
-   );
+   //  pacman_finalproject_wkeycode_soc nios_system(
+   //                          .clk_clk(Clk),
+   //                          .reset_reset_n(1'b1),    // Never reset NIOS
+   //                          .sdram_wire_addr(DRAM_ADDR),
+   //                          .sdram_wire_ba(DRAM_BA),
+   //                          .sdram_wire_cas_n(DRAM_CAS_N),
+   //                          .sdram_wire_cke(DRAM_CKE),
+   //                          .sdram_wire_cs_n(DRAM_CS_N),
+   //                          .sdram_wire_dq(DRAM_DQ),
+   //                          .sdram_wire_dqm(DRAM_DQM),
+   //                          .sdram_wire_ras_n(DRAM_RAS_N),
+   //                          .sdram_wire_we_n(DRAM_WE_N),
+   //                          .sdram_clk_clk(DRAM_CLK),
+   //                          .keycode_export(keycode),
+   //                          .otg_hpi_address_export(hpi_addr),
+   //                          .otg_hpi_data_in_port(hpi_data_in),
+   //                          .otg_hpi_data_out_port(hpi_data_out),
+   //                          .otg_hpi_cs_export(hpi_cs),
+   //                          .otg_hpi_r_export(hpi_r),
+   //                          .otg_hpi_w_export(hpi_w),
+   //                          .otg_hpi_reset_export(hpi_reset)
+   // );
 
     // Use PLL to generate the 25MHZ VGA_CLK.
     // You will have to generate it on your own in simulation.
     vga_clk vga_clk_instance(.inclk0(Clk), .c0(VGA_CLK));
+    // vga_clk vga_clk_instance(.inclk0(clear), .c0(VGA_CLK));
+
 
     // VGA Controller module
     // VGA_controller vga_controller_instance(.*, .Reset(Reset_h));
@@ -241,6 +254,7 @@ module final_top( input               CLOCK_50,
 */
     draw_control draw_control_instance(
                   .CLK(Clk),
+                  // .CLK(clear),
                   .RESET(Reset_h),
                   // .ENABLE(VGA_BLANK_N),  //blanking enable for drawing
                   // .DRAW_READY(sram_done),
@@ -271,10 +285,11 @@ module final_top( input               CLOCK_50,
                         ,.memdata(memtest)
     );
 
-
+//		logic frame_clk_rising_edge;
     //instantiate pac module - determines whether pacman should be drawn or not
     pac_controller pacman(
           .Clk(CLK),
+          // .Clk(clear),
           .Reset(Reset_h),
           .frame_clk(VGA_VS),
           //raw_input
@@ -288,6 +303,7 @@ module final_top( input               CLOCK_50,
           .pac_mem_start_Y(pac_mem_start_Y),
           //output
           .isPac(isPac)
+//			 .frame_clk_rising_edge(frame_clk_rising_edge)
     );
 
 
@@ -297,10 +313,16 @@ module final_top( input               CLOCK_50,
 
     // Display keycode on hex display
     HexDriver hex_inst_0 ({2'b0, color_index[1:0]}, HEX0);
-    HexDriver hex_inst_1 (keycode[3:0], Hex1);
+    HexDriver hex_inst_1 (keycode[3:0], HEX1);
     // HexDriver hex_inst_1 (DrawX[3:0], HEX1);
 	 HexDriver hex_inst_2 (keycode[7:4], HEX2);
 	 HexDriver hex_inst_3 (memtest, HEX3);
+//	 HexDriver hex_inst_7 (frame_clk_rising_edge, HEX7);
+
+   // HexDriver hex_inst_4 (clk_counter[3:0], HEX4);
+   // HexDriver hex_inst_5 (clk_counter[7:4], HEX5);
+   // HexDriver hex_inst_6 (clk_counter[11:8], HEX6);
+   // HexDriver hex_inst_7 (clk_counter[14:11], HEX7);
 
 
 endmodule

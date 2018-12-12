@@ -7,6 +7,7 @@ module  pac_controller ( input         Clk,                // 50 MHz clock
 
                output logic[7:0] pac_mem_start_X, pac_mem_start_Y,
                output logic  isPac            // Whether current pixel belongs to ball or background
+//					output logic frame_clk_rising_edge
               );
 
     parameter [7:0] pac_X_startpos = 8'd13;  // start position for center of pacman on the X axis
@@ -22,12 +23,13 @@ module  pac_controller ( input         Clk,                // 50 MHz clock
     parameter [7:0] pac_Size = 8'd5;        // Ball size
 
 
-    logic [9:0] pac_X_Pos_in, pac_X_Motion_in, pac_Y_Pos_in, pac_Y_Motion_in;
-
+    logic [7:0] pac_X_Pos_in = pac_X_startpos;
+	 logic [7:0] pac_Y_Pos_in = pac_Y_startpos;
 	 // In lab 8 initially the ball moves upwards but here there is no initial movement condition
-	 logic [7:0] pac_X_Motion = 8'b1;
-	 logic[7:0] pac_Y_Motion = 8'b0;
-
+	 logic [7:0] pac_X_Motion = 8'b0;
+	 logic[7:0] pac_Y_Motion = 8'b1;
+   logic [7:0] pac_X_Motion_in = 8'b0;
+   logic [7:0] pac_Y_Motion_in = 8'b1;
 	 logic[7:0] pac_X_Pos = pac_X_startpos;
 	 logic[7:0] pac_Y_Pos = pac_Y_startpos;
 
@@ -42,7 +44,7 @@ module  pac_controller ( input         Clk,                // 50 MHz clock
         frame_clk_rising_edge <= (frame_clk == 1'b1) && (frame_clk_delayed == 1'b0);
     end
     // Update registers
-    always_ff @ (posedge Clk)
+    always_ff @ (posedge frame_clk)
     begin
         if (Reset)
         begin
@@ -75,8 +77,8 @@ module  pac_controller ( input         Clk,                // 50 MHz clock
         pac_X_Motion_in = pac_X_Motion;
         pac_Y_Motion_in = pac_Y_Motion;
         // Update position and motion only at rising edge of frame clock
-        if (frame_clk_rising_edge)
-        begin
+//        if (frame_clk_rising_edge)
+//        begin
             // Be careful when using comparators with "logic" datatype because compiler treats
             //   both sides of the operator as UNSIGNED numbers.
             // e.g. Ball_Y_Pos - Ball_Size <= Ball_Y_Min
@@ -214,7 +216,7 @@ module  pac_controller ( input         Clk,                // 50 MHz clock
 //									Ball_X_Motion_in = 8'b0;
 //
 //									//don't want it to move like in lab 8
-									pac_Y_Motion_in = 8'd0;
+									pac_Y_Motion_in = pac_Y_Motion;
 //									Ball_Y_Motion_in = 8'b1;
 								end
 							end
@@ -227,11 +229,14 @@ module  pac_controller ( input         Clk,                // 50 MHz clock
 					endcase
 					// Update the ball's position with its motion
 							// pac_X_Pos_in = pac_X_Pos + pac_X_Motion;
-              pac_X_Pos_in = pac_X_Pos + 8'd1;
-
-							pac_Y_Pos_in = pac_Y_Pos + pac_Y_Motion;
-              flag = 1'b0;
-        end
+//              pac_X_Pos_in = pac_X_Pos + 8'd1;
+//
+//							pac_Y_Pos_in = pac_Y_Pos + pac_Y_Motion;
+//              flag = 1'b0;
+//        end
+		  pac_X_Pos_in = pac_X_Pos + pac_X_Motion;
+			pac_Y_Pos_in = pac_Y_Pos + pac_Y_Motion;
+//              flag = 1'b0;
     end
 
     // Compute whether the pixel corresponds to pacman or background
