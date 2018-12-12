@@ -27,9 +27,9 @@ module  pac_controller ( input         Clk,                // 50 MHz clock
 	 logic [7:0] pac_Y_Pos_in = pac_Y_startpos;
 	 // In lab 8 initially the ball moves upwards but here there is no initial movement condition
 	 logic [7:0] pac_X_Motion = 8'b0;
-	 logic[7:0] pac_Y_Motion = 8'b1;
+	 logic[7:0] pac_Y_Motion = 8'b0;
    logic [7:0] pac_X_Motion_in = 8'b0;
-   logic [7:0] pac_Y_Motion_in = 8'b1;
+   logic [7:0] pac_Y_Motion_in = 8'b0;
 	 logic[7:0] pac_X_Pos = pac_X_startpos;
 	 logic[7:0] pac_Y_Pos = pac_Y_startpos;
 
@@ -86,7 +86,7 @@ module  pac_controller ( input         Clk,                // 50 MHz clock
 
 
 				//begin keycode logic
-				unique case(temp)
+				unique case(keycode)
 					// 'W' (UP)
 					8'h1A:
 						begin
@@ -211,13 +211,12 @@ module  pac_controller ( input         Clk,                // 50 MHz clock
 							else
 
 								begin
-									// pac_X_Motion_in = 8'd0;
-									pac_X_Motion_in = pac_X_Motion;
-//									Ball_X_Motion_in = 8'b0;
+									pac_X_Motion_in = 8'd0;
+									// pac_X_Motion_in = pac_X_Motion;
 //
 //									//don't want it to move like in lab 8
-									pac_Y_Motion_in = pac_Y_Motion;
-//									Ball_Y_Motion_in = 8'b1;
+									// pac_Y_Motion_in = pac_Y_Motion;
+                  pac_Y_Motion_in = 8'd0;
 								end
 							end
 
