@@ -72,6 +72,27 @@ module  color_mapper (
             Green = 8'hE9;
             Blue = 8'h00;
           end
+          //light red
+          4'd5:
+          begin
+            Red = 8'hF0;
+            Green = 8'h00;
+            Blue = 8'h00;
+          end
+          //dark red
+          4'd6:
+          begin
+            Red = 8'h4F;
+            Green = 8'h00;
+            Blue = 8'h00;
+          end
+          //white/pink
+          4'd7:
+          begin
+            Red = 8'hDF;
+            Green = 8'hDC;
+            Blue = 8'hFF;
+          end
           default:
           //some default values that we can change later
             begin
