@@ -20,12 +20,14 @@ module  AI_controller ( input         Clk,                // 50 MHz clock
     parameter [7:0] AI_Size = 8'd5;        // Ball size
 
 
-    logic [7:0] AI_X_Pos_in, AI_Y_Pos_in, AI_Y_Motion_in;
+//    logic [7:0] AI_X_Pos_in, AI_Y_Pos_in;
     logic [7:0] AI_X_Motion_in = 1'b1;
+    logic [7:0] AI_Y_Motion_in = 1'b0;
 	 // In lab 8 initially the ball moves upwards but here there is no initial movement condition
 	 logic [7:0] AI_X_Motion = 8'b1;
 	 logic[7:0] AI_Y_Motion = 8'b0;
-
+   logic [7:0] AI_X_Pos_in = AI_X_startpos;
+   logic [7:0] AI_Y_Pos_in = AI_Y_startpos;
 	 logic[7:0] AI_X_Pos = AI_X_startpos;
 	 logic[7:0] AI_Y_Pos = AI_Y_startpos;
 
@@ -62,6 +64,10 @@ module  AI_controller ( input         Clk,                // 50 MHz clock
     // You need to modify always_comb block.
     always_comb
     begin
+      AI_X_Pos_in = AI_X_Pos;
+      AI_Y_Pos_in = AI_Y_Pos;
+      AI_X_Motion_in = AI_X_Motion;
+      // AI_Y_Motion_in = AI_Y_Motion;
 
 		  // AI_X_Motion_in = 8'd1; //assigned in if construct?
 		  AI_Y_Motion_in = 8'd0; //halt vertical motion for now
@@ -71,7 +77,8 @@ module  AI_controller ( input         Clk,                // 50 MHz clock
       else if ( AI_X_Pos <= AI_X_Min + AI_Size )  // Ball is at the left edge, BOUNCE!
          AI_X_Motion_in = AI_X_Step;
       else
-        AI_X_Motion_in = 8'd1;
+        AI_X_Motion_in = AI_X_Motion;
+        AI_Y_Motion_in = AI_Y_Motion;
 
 		  // AI_X_Pos_in = AI_X_Pos + 8'd1;
       AI_X_Pos_in = AI_X_Pos + AI_X_Motion;

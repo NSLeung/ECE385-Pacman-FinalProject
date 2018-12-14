@@ -47,18 +47,18 @@ always_comb begin
 		mem_address = 16'b0;
 	end
 	//check if in bounds
-	else if((DrawX < 256) && (DrawY < 256) && (isPac == 1'b0))
+	else if((DrawX < 256) && (DrawY < 256) && (isPac == 1'b0) && (isAI == 1'b0))
 // if((DrawX < 256) && (DrawY < 256))
 	begin
 			mem_address = DrawX + 10'd256 * DrawY;
 //			mem_address = 16'd5;
 	end
-	else if (isPac == 1'b1 && isAI == 1'b0)
+	else if (isPac == 1'b1) //&& isAI == 1'b0)
 	begin
 		//grab pacman in memory
 		mem_address = pac_mem_pos_X + 8'd10 * pac_mem_pos_Y;
 	end
-  else if (isAI == 1'b1 && isPac == 1'b0)
+  else if (isAI == 1'b1) //&& isPac == 1'b0)
   begin
     //grab pacman in memory
     mem_address = AI_mem_pos_X + 8'd10 * AI_mem_pos_Y;
