@@ -3,12 +3,11 @@ module  pac_controller ( input         Clk,                // 50 MHz clock
                              frame_clk,          // The clock indicating a new frame (~60Hz)
                input [9:0]   DrawX, DrawY,       // Current pixel coordinates
 					     input[7:0]	  keycode,				 // keycode
-               input logic [3:0] mem1 [0:65535], // input of background data
+
 
                output logic[7:0] pac_mem_start_X, pac_mem_start_Y,
                output logic  isPac            // Whether current pixel belongs to ball or background
 //					output logic frame_clk_rising_edge
-
               );
 
     parameter [7:0] pac_X_startpos = 8'd13;  // start position for center of pacman on the X axis
@@ -21,7 +20,7 @@ module  pac_controller ( input         Clk,                // 50 MHz clock
     parameter [7:0] pac_Y_Step = 8'd1;      // Step size on the Y axis
 
     //collider math
-    parameter [7:0] pac_Size = 8'd5;        // Pac size
+    parameter [7:0] pac_Size = 8'd5;        // Ball size
 
 
     logic [7:0] pac_X_Pos_in = pac_X_startpos;
@@ -34,25 +33,9 @@ module  pac_controller ( input         Clk,                // 50 MHz clock
 	 logic[7:0] pac_X_Pos = pac_X_startpos;
 	 logic[7:0] pac_Y_Pos = pac_Y_startpos;
 
-
-   // logic [15:0] pac_topleft_corner_top, pac_topright_corner_top, pac_bottomleft_corner_bot, pac_bottomright_corner_bot;
-   logic [15:0] pac_topleft_corner_left, pac_topright_corner_right, pac_bottomleft_corner_left, pac_bottomright_corner_right;
-   logic [15:0] pac_top_mid, pac_bottom_mid, pac_right_mid, pac_left_mid;
-
-   // assign pac_topleft_corner_top =  256*(pac_Y_Pos - pac_Size - 8'd1) + pac_X_Pos - pac_Size;
-   // assign pac_topright_corner_top = 256*(pac_Y_Pos - pac_Size - 8'd1) + pac_X_Pos + pac_Size;
-   // assign pac_bottomleft_corner_bot = 256*(pac_Y_Pos + pac_Size + 8'd1) +  pac_X_Pos - pac_Size;
-   // assign pac_bottomright_corner_bot = 256*(pac_Y_Pos + pac_Size + 8'd1) +  pac_X_Pos + pac_Size;
-   assign pac_top_mid = 16'd256*(pac_Y_Pos - pac_Size - 8'd1) + pac_X_Pos;
-   assign pac_bottom_mid = 16'd256*(pac_Y_Pos + pac_Size + 8'd1) + pac_X_Pos;
-   assign pac_right_mid = 16'd256*(pac_Y_Pos) + pac_X_Pos + pac_Size + 8'd1;
-   assign pac_left_mid = 16'd256*(pac_Y_Pos) + pac_X_Pos - pac_Size - 8'd1;
-
-   assign pac_topleft_corner_left =  16'd256*(pac_Y_Pos - pac_Size - 8'd1) + pac_X_Pos - pac_Size - 16'd1;
-   assign pac_topright_corner_right = 16'd256*(pac_Y_Pos - pac_Size - 8'd1) + pac_X_Pos + pac_Size + 16'd1;
-   assign pac_bottomleft_corner_left = 16'd256*(pac_Y_Pos + pac_Size + 8'd1) +  pac_X_Pos - pac_Size - 16'd1;
-   assign pac_bottomright_corner_right = 16'd256*(pac_Y_Pos + pac_Size + 8'd1) +  pac_X_Pos + pac_Size + 16'd1;
-
+//		keycode = 8'h1F;
+	// logic [7:0] temp = 8'h1F;
+  // logic flag = 1'b1;
     //////// Do not modify the always_ff blocks. ////////
     // Detect rising edge of frame_clk
     logic frame_clk_delayed, frame_clk_rising_edge;
@@ -109,22 +92,20 @@ module  pac_controller ( input         Clk,                // 50 MHz clock
 						begin
 							//clear horizontal motion for any vertical motion
 							pac_X_Motion_in = 8'd0;
-							// if( pac_Y_Pos + pac_Size >= pac_Y_Max )  // pacman is at the bottom edge, stay there!
-							// 	 pac_Y_Motion_in = 8'd0;  // Y Motion is 0 too so that it stays in same place.
-							// else if ( pac_Y_Pos <= pac_Y_Min + pac_Size )  // pacman is at the top edge, stay there!
-							// 	 pac_Y_Motion_in = 8'd0;
-							// else if( pac_X_Pos + pac_Size >= pac_X_Max )	//pacman is at right edge, stay there!
-							// 		begin
-							// 			pac_X_Motion_in = 8'd0;
-							// 			pac_Y_Motion_in = 8'd0; //clear y_motion;
-							// 		end
-							// else if ( pac_X_Pos <= pac_X_Min + pac_Size ) //pacman is at left edge, stay there!
-							// 		begin
-							// 			pac_X_Motion_in = 8'd0;
-							// 			pac_Y_Motion_in = 8'd0; //clear y_motion;
-							// 		end
-              if((mem1[pac_topleft_corner_left] == 4'd2) || (mem1[pac_topright_corner_right] == 4'd2) || (mem1[pac_top_mid] == 4'd2))
-                pac_Y_Motion_in = 8'd0;
+							if( pac_Y_Pos + pac_Size >= pac_Y_Max )  // pacman is at the bottom edge, stay there!
+								 pac_Y_Motion_in = 8'd0;  // Y Motion is 0 too so that it stays in same place.
+							else if ( pac_Y_Pos <= pac_Y_Min + pac_Size )  // pacman is at the top edge, stay there!
+								 pac_Y_Motion_in = 8'd0;
+							else if( pac_X_Pos + pac_Size >= pac_X_Max )	//pacman is at right edge, stay there!
+									begin
+										pac_X_Motion_in = 8'd0;
+										pac_Y_Motion_in = 8'd0; //clear y_motion;
+									end
+							else if ( pac_X_Pos <= pac_X_Min + pac_Size ) //pacman is at left edge, stay there!
+									begin
+										pac_X_Motion_in = 8'd0;
+										pac_Y_Motion_in = 8'd0; //clear y_motion;
+									end
 							else
 							//continue in upward DIRECTION
 								pac_Y_Motion_in = ~(8'd1) + 1'b1; // -1
@@ -137,22 +118,20 @@ module  pac_controller ( input         Clk,                // 50 MHz clock
 						begin
 							//clear horizontal motion for any vertical motion
 							pac_X_Motion_in = 8'd0;
-							// if( pac_Y_Pos + pac_Size >= pac_Y_Max )  // pacman is at the bottom edge, stay there!
-							// 	 pac_Y_Motion_in = 8'd0;  // Y Motion is 0 too so that it stays in same place.
-							// else if ( pac_Y_Pos <= pac_Y_Min + pac_Size )  // pacman is at the top edge, stay there!
-							// 	 pac_Y_Motion_in = 8'd0;
-							// else if( pac_X_Pos + pac_Size >= pac_X_Max )	//pacman is at right edge, stay there!
-							// 		begin
-							// 			pac_X_Motion_in = 8'd0;
-							// 			pac_Y_Motion_in = 8'd0; //clear y_motion;
-							// 		end
-							// else if ( pac_X_Pos <= pac_X_Min + pac_Size ) //pacman is at left edge, stay there!
-							// 		begin
-							// 			pac_X_Motion_in = pac_X_Step;
-							// 			pac_Y_Motion_in = 8'd0; //clear y_motion;
-							// 		end
-              if((mem1[pac_bottomleft_corner_left] == 4'd2) || (mem1[pac_bottomright_corner_right] == 4'd2) || (mem1[pac_bottom_mid] == 4'd2))
-                pac_Y_Motion_in = 8'd0;
+							if( pac_Y_Pos + pac_Size >= pac_Y_Max )  // pacman is at the bottom edge, stay there!
+								 pac_Y_Motion_in = 8'd0;  // Y Motion is 0 too so that it stays in same place.
+							else if ( pac_Y_Pos <= pac_Y_Min + pac_Size )  // pacman is at the top edge, stay there!
+								 pac_Y_Motion_in = 8'd0;
+							else if( pac_X_Pos + pac_Size >= pac_X_Max )	//pacman is at right edge, stay there!
+									begin
+										pac_X_Motion_in = 8'd0;
+										pac_Y_Motion_in = 8'd0; //clear y_motion;
+									end
+							else if ( pac_X_Pos <= pac_X_Min + pac_Size ) //pacman is at left edge, stay there!
+									begin
+										pac_X_Motion_in = pac_X_Step;
+										pac_Y_Motion_in = 8'd0; //clear y_motion;
+									end
 							else
 							//continue in downward DIRECTION
 								pac_Y_Motion_in = 8'd1; // +1
@@ -165,22 +144,20 @@ module  pac_controller ( input         Clk,                // 50 MHz clock
 						begin
 							//clear vertical motion for any horizontal motion
 							pac_Y_Motion_in = 8'd0;
-							// if( pac_Y_Pos + pac_Size >= pac_Y_Max )  // pacman is at the bottom edge, stay there!
-							// 	 pac_Y_Motion_in = 8'd0;  // Y Motion is 0 too so that it stays in same place.
-							// else if ( pac_Y_Pos <= pac_Y_Min + pac_Size )  // pacman is at the top edge, stay there!
-							// 	 pac_Y_Motion_in = 8'd0;
-							// else if( pac_X_Pos + pac_Size >= pac_X_Max )	//pacman is at right edge, stay there!
-							// 		begin
-							// 			pac_X_Motion_in = 8'd0;
-							// 			pac_Y_Motion_in = 8'd0; //clear y_motion;
-							// 		end
-							// else if ( pac_X_Pos <= pac_X_Min + pac_Size ) //pacman is at left edge, stay there!
-							// 		begin
-							// 			pac_X_Motion_in = 8'd0;
-							// 			pac_Y_Motion_in = 8'd0; //clear y_motion;
-							// 		end
-              if((mem1[pac_topleft_corner_left] == 4'd2) || (mem1[pac_bottomleft_corner_left] == 4'd2) || (mem1[pac_left_mid] == 4'd2))
-                pac_X_Motion_in = 8'd0;
+							if( pac_Y_Pos + pac_Size >= pac_Y_Max )  // pacman is at the bottom edge, stay there!
+								 pac_Y_Motion_in = 8'd0;  // Y Motion is 0 too so that it stays in same place.
+							else if ( pac_Y_Pos <= pac_Y_Min + pac_Size )  // pacman is at the top edge, stay there!
+								 pac_Y_Motion_in = 8'd0;
+							else if( pac_X_Pos + pac_Size >= pac_X_Max )	//pacman is at right edge, stay there!
+									begin
+										pac_X_Motion_in = 8'd0;
+										pac_Y_Motion_in = 8'd0; //clear y_motion;
+									end
+							else if ( pac_X_Pos <= pac_X_Min + pac_Size ) //pacman is at left edge, stay there!
+									begin
+										pac_X_Motion_in = 8'd0;
+										pac_Y_Motion_in = 8'd0; //clear y_motion;
+									end
 							else
 							//continue in left DIRECTION
 								pac_X_Motion_in = ~(8'd1) + 1'b1; // -1
@@ -192,22 +169,20 @@ module  pac_controller ( input         Clk,                // 50 MHz clock
 						begin
 							//clear vertical motion for any horizontal motion
 							pac_Y_Motion_in = 8'd0;
-							// if( pac_Y_Pos + pac_Size >= pac_Y_Max )  // pacman is at the bottom edge, stay there!
-							// 	 pac_Y_Motion_in = 8'd0;  // Y Motion is 0 too so that it stays in same place.
-							// else if ( pac_Y_Pos <= pac_Y_Min + pac_Size )  // pacman is at the top edge, stay there!
-							// 	 pac_Y_Motion_in = 8'd0;
-							// else if( pac_X_Pos + pac_Size >= pac_X_Max )	//pacman is at right edge, stay there!
-							// 		begin
-							// 			pac_X_Motion_in = 8'd0;
-							// 			pac_Y_Motion_in = 8'd0; //clear y_motion;
-							// 		end
-							// else if ( pac_X_Pos <= pac_X_Min + pac_Size ) //pacman is at left edge, stay there!
-							// 		begin
-							// 			pac_X_Motion_in = 8'd0;
-							// 			pac_Y_Motion_in = 8'd0; //clear y_motion;
-							// 		end
-              if((mem1[pac_topright_corner_right] == 4'd2) || (mem1[pac_bottomright_corner_right] == 4'd2) || (mem1[pac_right_mid] == 4'd2))
-                pac_X_Motion_in = 8'd0;
+							if( pac_Y_Pos + pac_Size >= pac_Y_Max )  // pacman is at the bottom edge, stay there!
+								 pac_Y_Motion_in = 8'd0;  // Y Motion is 0 too so that it stays in same place.
+							else if ( pac_Y_Pos <= pac_Y_Min + pac_Size )  // pacman is at the top edge, stay there!
+								 pac_Y_Motion_in = 8'd0;
+							else if( pac_X_Pos + pac_Size >= pac_X_Max )	//pacman is at right edge, stay there!
+									begin
+										pac_X_Motion_in = 8'd0;
+										pac_Y_Motion_in = 8'd0; //clear y_motion;
+									end
+							else if ( pac_X_Pos <= pac_X_Min + pac_Size ) //pacman is at left edge, stay there!
+									begin
+										pac_X_Motion_in = 8'd0;
+										pac_Y_Motion_in = 8'd0; //clear y_motion;
+									end
 							else
 							//continue in right DIRECTION
 								pac_X_Motion_in = 8'd1; // 1
@@ -216,24 +191,24 @@ module  pac_controller ( input         Clk,                // 50 MHz clock
 
 						//default case?
 						default:
-							// begin
+							begin
 							//clear vertical motion for any horizontal motion
 //							Ball_Y_Motion_in = 8'd0;
-							// if( pac_Y_Pos + pac_Size >= pac_Y_Max )  // pacman is at the bottom edge, stay there!
-							// 	 pac_Y_Motion_in = 8'd0;  // Y Motion is 0 too so that it stays in same place.
-							// else if ( pac_Y_Pos <= pac_Y_Min + pac_Size )  // pacman is at the top edge, stay there!
-							// 	 pac_Y_Motion_in = 8'd0;
-							// else if( pac_X_Pos + pac_Size >= pac_X_Max )	//pacman is at right edge, stay there!
-							// 		begin
-							// 			pac_X_Motion_in = 8'd0;
-							// 			pac_Y_Motion_in = 8'd0; //clear y_motion;
-							// 		end
-							// else if ( pac_X_Pos <= pac_X_Min + pac_Size ) //pacman is at left edge, stay there!
-							// 		begin
-							// 			pac_X_Motion_in = 8'd0;
-							// 			pac_Y_Motion_in = 8'd0; //clear y_motion;
-							// 		end
-							// else
+							if( pac_Y_Pos + pac_Size >= pac_Y_Max )  // pacman is at the bottom edge, stay there!
+								 pac_Y_Motion_in = 8'd0;  // Y Motion is 0 too so that it stays in same place.
+							else if ( pac_Y_Pos <= pac_Y_Min + pac_Size )  // pacman is at the top edge, stay there!
+								 pac_Y_Motion_in = 8'd0;
+							else if( pac_X_Pos + pac_Size >= pac_X_Max )	//pacman is at right edge, stay there!
+									begin
+										pac_X_Motion_in = 8'd0;
+										pac_Y_Motion_in = 8'd0; //clear y_motion;
+									end
+							else if ( pac_X_Pos <= pac_X_Min + pac_Size ) //pacman is at left edge, stay there!
+									begin
+										pac_X_Motion_in = 8'd0;
+										pac_Y_Motion_in = 8'd0; //clear y_motion;
+									end
+							else
 
 								begin
 									pac_X_Motion_in = 8'd0;
@@ -243,7 +218,7 @@ module  pac_controller ( input         Clk,                // 50 MHz clock
 									// pac_Y_Motion_in = pac_Y_Motion;
                   pac_Y_Motion_in = 8'd0;
 								end
-							// end
+							end
 
 							// TODO: Add other boundary detections and handle keypress here.
 

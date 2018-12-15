@@ -7,8 +7,10 @@ module draw_control(input logic CLK,
 							input logic [9:0] DrawY,
 							input logic[7:0] pac_mem_start_X, pac_mem_start_Y, // provides the start address of pacman png 10x10
               input logic[7:0] AI_mem_start_X, AI_mem_start_Y, // provides the start address of ai png 10x10
-
 							input isPac, isAI,
+							input isEaten,
+							input [7:0] score_in,
+							output [7:0] score_out,
 							// input logic [1:0] PLAYER_DIR,
 							// input logic [5:0] UI_ENABLE,
 							// input logic [5:0] PLAYER_X,
@@ -39,20 +41,34 @@ logic [7:0] AI_mem_pos_X, AI_mem_pos_Y;
 
 
 //2 ALWAYS CONSTRUCT
-
+always_ff @ (posedge CLK)
+begin
+	if(isEaten)
+	score_out <= score_in + 8'b1;
+	else
+	score_out <= score_in;
+end
 //address calculations
+
+
+
 always_comb begin
 	if(RESET)
 	begin
 		mem_address = 16'b0;
 	end
 	//check if in bounds
-	else if((DrawX < 256) && (DrawY < 256) && (isPac == 1'b0) && (isAI == 1'b0))
+//	else if (isEaten)
+//		mem_address = 16'd000;
+	else if((DrawX < 256) && (DrawY < 256) && (isPac == 1'b0) && (isAI == 1'b0) && (isEaten != 1'b1))
 // if((DrawX < 256) && (DrawY < 256))
 	begin
 			mem_address = DrawX + 10'd256 * DrawY;
 //			mem_address = 16'd5;
 	end
+	else if (isEaten == 1'b1)
+		mem_address = 16'd000;
+
 	else if (isPac == 1'b1) //&& isAI == 1'b0)
 	begin
 		//grab pacman in memory

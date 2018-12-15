@@ -43,7 +43,7 @@ for x in range(1,n_cols):
         count = BFS_count(x,y,img)
         if(count >=2 and count < 7):
             dotCount+=1
-            outFile.write("Dot dot"+str(dotCount)+" #(parameter x="+str(y)+", parameter y="+str(x)+")(.Clk(CLK), .Reset(Reset_h),.DrawX(DrawX), .DrawY(DrawY), .pac_X_Pos(pac_X_Pos), .pac_Y_Pos(pac_Y_Pos), .isEaten(isEaten"+str(dotCount)+"));\n")
+            outFile.write("Dot #("+str(y)+", "+str(x)+") dot"+str(dotCount)+" (.Clk(VGA_VS), .Reset(Reset_h),.DrawX(DrawX), .DrawY(DrawY), .pac_mem_start_X(pac_mem_start_X), .pac_mem_start_Y(pac_mem_start_Y), .isEaten(isEaten"+str(dotCount)+"));\n")
         # outFile.write(pixel)
         # if pink pixel
         # if(img[i][j][0] != 33 and img[i][j][0] != 0):
